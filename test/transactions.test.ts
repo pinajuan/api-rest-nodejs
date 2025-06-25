@@ -11,7 +11,7 @@ describe('Transactions routes', () => {
         await app.close()
     })
     
-    test('o usuário consegue criar uma nova transação', async () => {
+    test('should be able to create a new transaction', async () => {
         
         const response = await request(app.server)
         .post('/transactions')
@@ -20,6 +20,33 @@ describe('Transactions routes', () => {
             amount: 5000,
             type: 'credit',
         }).expect(201)
-    
+
     })
+
+    test('should be able to list all transactions', async () => {
+
+        const createTransactionResponse = await request(app.server)
+        .post('/transactions')
+        .send({
+            title: 'New transaction',
+            amount: 5000,
+            type: 'credit',
+        })
+
+        const cookies = createTransactionResponse.get('Set-Cookie')
+
+        const listTransactionsResponse = await request(app.server)
+        .get('/transactions')
+        .set('Cookie', cookies)
+        .expect(200)
+
+        expect(listTransactionsResponse.body.transactions).toEqual([
+            expect.objectContaining({
+                title: 'New transaction',
+                amount: 5000,
+            })
+        ])
+
+    })
+
 })
